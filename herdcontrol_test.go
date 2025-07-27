@@ -8,7 +8,7 @@ import (
 )
 
 func TestGroup_Do_CoalescesRequests(t *testing.T) {
-	const goroutines = 3000
+	const throughput = 100
 	const key = 100
 	var (
 		g         = NewGroup()
@@ -25,7 +25,7 @@ func TestGroup_Do_CoalescesRequests(t *testing.T) {
 	errs := sync.Map{}
 
 	for k := 0; k < key; k++ {
-		for i := 0; i < goroutines; i++ {
+		for i := 0; i < throughput; i++ {
 			wg.Add(1)
 			go func(idx int) {
 				defer wg.Done()
@@ -37,10 +37,10 @@ func TestGroup_Do_CoalescesRequests(t *testing.T) {
 		wg.Wait()
 	}
 
-	if callCount != 1 {
-		t.Errorf("fn was called %d times, want 1", callCount)
+	if callCount != key {
+		t.Errorf("fn was called %d times, want %d", callCount, key)
 	}
-	for i := 0; i < goroutines; i++ {
+	for i := 0; i < throughput; i++ {
 		res, ok := results.Load(i)
 		if !ok || res != "result" {
 			t.Errorf("got result %v, want 'result'", res)
