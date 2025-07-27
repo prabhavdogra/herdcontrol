@@ -1,4 +1,5 @@
-module herdcontrol
+module github.com/prabhavdogra/herdcontrol
+
 
 go 1.25
 
