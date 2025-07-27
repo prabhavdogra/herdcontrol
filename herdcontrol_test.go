@@ -1,20 +1,22 @@
-package heardcontrol
+package herdcontrol
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 )
 
 func TestGroup_Do_CoalescesRequests(t *testing.T) {
-	const goroutines = 10000
+	const goroutines = 3000
+	const key = 100
 	var (
 		g         = NewGroup()
 		callCount int
 	)
 	fn := func() (any, error) {
 		callCount++
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(300 * time.Microsecond)
 		return "result", nil
 	}
 
@@ -22,16 +24,18 @@ func TestGroup_Do_CoalescesRequests(t *testing.T) {
 	results := sync.Map{}
 	errs := sync.Map{}
 
-	for i := 0; i < goroutines; i++ {
-		wg.Add(1)
-		go func(idx int) {
-			defer wg.Done()
-			res, err := g.Do("key", fn)
-			results.Store(idx, res)
-			errs.Store(idx, err)
-		}(i)
+	for k := 0; k < key; k++ {
+		for i := 0; i < goroutines; i++ {
+			wg.Add(1)
+			go func(idx int) {
+				defer wg.Done()
+				res, err := g.Do("key_"+fmt.Sprintf("%d", k), fn)
+				results.Store(idx, res)
+				errs.Store(idx, err)
+			}(i)
+		}
+		wg.Wait()
 	}
-	wg.Wait()
 
 	if callCount != 1 {
 		t.Errorf("fn was called %d times, want 1", callCount)

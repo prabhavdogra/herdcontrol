@@ -1,4 +1,4 @@
-package heardcontrol
+package herdcontrol
 
 import (
 	"sync"
