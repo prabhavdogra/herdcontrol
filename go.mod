@@ -1,4 +1,4 @@
-module coalesce
+module herdcontrol
 
 go 1.25
 
